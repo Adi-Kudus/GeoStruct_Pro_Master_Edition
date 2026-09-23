@@ -903,18 +903,18 @@
     </div>
 
     <!-- HIDDEN CONTAINER FOR FORMAL ENGINEER PRINT REPORT -->
-    <div id="printableReport" class="hidden p-8 font-mono text-black bg-white">
-        <div class="border-b-2 border-black pb-4 mb-4 flex justify-between items-center">
+    <div id="printableReport" class="hidden p-8 font-sans text-slate-900 bg-white tex2jax_process">
+        <div class="border-b-2 border-slate-900 pb-4 mb-4 flex justify-between items-center">
             <div>
-                <h1 class="text-xl font-black">LEMBAR VERIFIKASI KOMPUTASI REKAYASA GEOTEKNIK & STRUKTUR SIPIL</h1>
-                <p class="text-xs text-gray-600">GeoStruct Pro Master Edition V5.5 // Standar SNI 8460:2017 & SNI 2847:2019</p>
+                <h1 class="text-xl font-black tracking-tight text-slate-950 font-tech">LEMBAR VERIFIKASI KOMPUTASI REKAYASA GEOTEKNIK & STRUKTUR SIPIL</h1>
+                <p class="text-xs text-slate-600 font-mono">GeoStruct Pro Master Edition V5.5 // Standar SNI 8460:2017 & SNI 2847:2019</p>
             </div>
-            <div class="text-right text-xs">
+            <div class="text-right text-xs font-mono">
                 <p><strong>Lead Engineer:</strong> Ir. Mohamad Hartadi (Adi)</p>
                 <p id="printTimestamp"></p>
             </div>
         </div>
-        <div id="printContent" class="space-y-4 text-xs leading-relaxed"></div>
+        <div id="printContent" class="space-y-4 text-xs leading-relaxed tex2jax_process"></div>
     </div>
 
     <!-- THREE.JS & APPLICATION ENGINE JAVASCRIPT -->
@@ -2438,6 +2438,12 @@
             s = s.replace(/\\%/g, "%");
             s = s.replace(/\^\\circ|\\circ/g, "°");
             s = s.replace(/\\text\{([^}]*)\}/g, "$1");
+            s = s.replace(/\\quad/g, " &nbsp;&nbsp; ");
+            s = s.replace(/\\qquad/g, " &nbsp;&nbsp;&nbsp;&nbsp; ");
+            s = s.replace(/\\,/g, " ");
+            s = s.replace(/\\left\(|\\right\)/g, "");
+            s = s.replace(/\\left\[|\\right\]/g, "");
+            s = s.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1 / $2)");
             const greek = {
                 '\\alpha': 'α', '\\beta': 'β', '\\gamma': 'γ', '\\delta': 'δ',
                 '\\Delta': 'Δ', '\\epsilon': 'ε', '\\theta': 'θ', '\\mu': 'μ',
@@ -2446,6 +2452,10 @@
             };
             for (const [k, v] of Object.entries(greek)) {
                 s = s.replace(new RegExp(k, 'g'), v);
+            }
+            const funcs = ['\\tan', '\\sin', '\\cos', '\\cot', '\\exp', '\\ln', '\\log'];
+            for (const f of funcs) {
+                s = s.replace(new RegExp(f, 'g'), f.replace('\\', ''));
             }
             const ops = {
                 '\\ge\b|\\geq\b': '≥',
@@ -2462,8 +2472,9 @@
             s = s.replace(/\^3/g, "³");
             s = s.replace(/\^2/g, "²");
             s = s.replace(/\^\{([^}]+)\}/g, "<sup>$1</sup>");
+            s = s.replace(/\^([a-zA-Z0-9\u0370-\u03ff]+)/g, "<sup>$1</sup>");
             s = s.replace(/_\{([^}]+)\}/g, "<sub>$1</sub>");
-            s = s.replace(/_([a-zA-Z0-9]+)/g, "<sub>$1</sub>");
+            s = s.replace(/_([a-zA-Z0-9\u0370-\u03ff]+)/g, "<sub>$1</sub>");
             s = s.replace(/\$\$/g, "");
             s = s.replace(/\$/g, "");
             s = s.replace(/\\([a-zA-Z]+)/g, "$1");
@@ -2527,7 +2538,7 @@
             }
         }
 
-        // FORMAL ENGINEER PRINT REPORT
+        // FORMAL ENGINEER PRINT REPORT (MENGGUNAKAN VECTOR SVG MATHJAX & TIPOGRAFI STANDAR SNI)
         function printCalculationSheet() {
             if (!activeFormulaId || !formulaHistory[activeFormulaId]) {
                 alert("Jalankan kalkulasi terlebih dahulu sebelum mencetak lembar verifikasi.");
@@ -2536,42 +2547,113 @@
             const item = masterFormulas.find(f => f.id === activeFormulaId);
             const history = formulaHistory[activeFormulaId];
 
-            let inputSummary = "<table style='width:100%; border-collapse:collapse; margin-bottom:15px;' border='1' cellpadding='7'><thead><tr style='background:#f1f5f9;'><th>Parameter</th><th>Nilai Masukan</th></tr></thead><tbody>";
+            let inputSummary = "<table style='width:100%; border-collapse:collapse; margin-bottom:15px; font-size:12px;' border='1' cellpadding='8'><thead><tr style='background:#f8fafc;'><th style='text-align:left; color:#0f172a;'>Parameter Desain / Uji Tanah</th><th style='text-align:right; color:#0f172a;'>Nilai Masukan</th></tr></thead><tbody>";
             item.inputs.forEach(inp => {
-                inputSummary += `<tr><td>${inp.label}</td><td>${history.inputs[inp.id]}</td></tr>`;
+                const rawVal = history.inputs[inp.id];
+                let displayVal = rawVal;
+                if (inp.type === "select" && inp.options) {
+                    const matchedOpt = inp.options.find(o => o.val == rawVal);
+                    if (matchedOpt) displayVal = matchedOpt.txt;
+                }
+                inputSummary += `<tr><td style='color:#1e293b;'>${inp.label}</td><td style='text-align:right; font-weight:bold; font-family:monospace;'>${displayVal}</td></tr>`;
             });
             inputSummary += "</tbody></table>";
 
+            const reportContainer = document.getElementById('printableReport');
             const printContent = document.getElementById('printContent');
             const printTime = document.getElementById('printTimestamp');
             printTime.innerText = "Tanggal Cetak: " + new Date().toLocaleString('id-ID');
 
+            // Cek apakah formula matematika sudah dirender oleh MathJax pada solver modal
+            const renderedMath = document.getElementById('modalMathJaxExpression');
+            let formulaDisplayHtml = '';
+            
+            if (renderedMath && (renderedMath.querySelector('svg') || renderedMath.querySelector('.MathJax') || renderedMath.innerHTML.includes('mjx-container'))) {
+                formulaDisplayHtml = renderedMath.innerHTML;
+            } else {
+                formulaDisplayHtml = `<div class="tex2jax_process" style="font-size: 15px;">${item.expression}</div>`;
+            }
+
             printContent.innerHTML = `
-                <div style="border-bottom:1px solid #ccc; padding-bottom:8px; margin-bottom:12px;">
-                    <h2 style="font-size:16px; margin:0 0 4px 0;"><strong>Modul:</strong> ${item.num} - ${item.title}</h2>
-                    <p style="margin:0; color:#555;"><strong>Persamaan:</strong> ${item.expression}</p>
+                <div style="border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <span style="display: inline-block; font-size: 11px; font-weight: 800; background: #0f172a; color: #fff; padding: 2px 8px; border-radius: 4px; margin-bottom: 4px; font-family: monospace;">MODUL ${item.num}</span>
+                            <h2 style="font-size: 17px; font-weight: 900; margin: 0 0 4px 0; color: #0f172a;">${item.title}</h2>
+                            <p style="margin: 0; color: #475569; font-size: 12px; max-width: 650px;">${item.desc}</p>
+                        </div>
+                        <div style="text-align: right; font-size: 11px; color: #64748b; font-family: monospace;">
+                            <span>Kategori: <strong>${item.categoryName || 'Geoteknik'}</strong></span><br>
+                            <span>Status: <strong style="color: ${history.status === 'aman' ? '#059669' : (history.status === 'kritis' ? '#d97706' : '#dc2626')}; font-size: 13px;">${history.status.toUpperCase()}</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Persamaan Matematis Terverifikasi -->
+                    <div style="margin-top: 14px; padding: 12px 16px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; text-align: center;">
+                        <span style="font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1px; display: block; margin-bottom: 6px; text-transform: uppercase; font-family: monospace;">Persamaan Inti Matematis:</span>
+                        <div id="printFormulaContainer" class="tex2jax_process" style="display: inline-block; font-size: 16px; color: #0f172a;">
+                            ${formulaDisplayHtml}
+                        </div>
+                    </div>
                 </div>
-                <h3>1. Parameter Masukan (Laboratory & Field Parameters)</h3>
+
+                <h3 style="font-size: 13px; font-weight: 800; margin: 16px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; color: #0f172a;">1. Parameter Masukan (Laboratory & Field Parameters)</h3>
                 ${inputSummary}
-                <h3>2. Hasil Komputasi Eksak</h3>
-                <div style="padding:12px; background:#f8fafc; border-left:4px solid #f59e0b; margin-bottom:15px; font-weight:bold; font-size:14px;">
-                    Output Nilai: ${history.evalResult.displayVal} (Status: ${history.status.toUpperCase()})
+
+                <h3 style="font-size: 13px; font-weight: 800; margin: 16px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; color: #0f172a;">2. Hasil Komputasi Eksak</h3>
+                <div style="padding: 12px 16px; background: #f8fafc; border-left: 5px solid ${history.status === 'aman' ? '#10b981' : (history.status === 'kritis' ? '#f59e0b' : '#ef4444')}; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; border-radius: 4px; margin-bottom: 15px;">
+                    <div style="font-size: 15px; font-weight: 900; color: #0f172a;">
+                        Output Hasil: <span style="color: ${history.status === 'aman' ? '#047857' : (history.status === 'kritis' ? '#b45309' : '#b91c1c')}; font-family: monospace;">${cleanFormulaMathForDisplay(history.evalResult.displayVal)}</span>
+                    </div>
+                    <div style="font-size: 11px; font-weight: 700; color: #64748b; margin-top: 4px;">
+                        Kriteria Keamanan SNI: <span style="color: ${history.status === 'aman' ? '#047857' : (history.status === 'kritis' ? '#b45309' : '#b91c1c')};">${history.status === 'aman' ? 'MEMENUHI PERSYARATAN (PASS / AMAN)' : (history.status === 'kritis' ? 'MENDEKATI BATAS KRITIS (WARNING)' : 'TIDAK MEMENUHI STANDAR (FAIL / BAHAYA)')}</span>
+                    </div>
                 </div>
-                <h3>3. Diagnostik Fisik Tanah</h3>
-                <p style="margin-bottom:15px;">${history.evalResult.diag.replace(/\$/g, '')}</p>
-                <h3>4. Rekomendasi Solusi Geoteknik & Sipil Struktur</h3>
-                <p style="margin-bottom:15px;">${history.evalResult.sol.replace(/\$/g, '')}</p>
-                <div style="margin-top:40px; border-top:1px solid #000; padding-top:12px; display:flex; justify-content:space-between;">
-                    <div>Standar Acuan: ${history.evalResult.standard}</div>
-                    <div style="text-align:right;">
-                        Diverifikasi & Disahkan Oleh:<br><br><br>
-                        <strong><u>Ir. Mohamad Hartadi (Adi)</u></strong><br>
-                        <span>Ahli Rekayasa Geoteknik & Struktur Sipil</span>
+
+                <h3 style="font-size: 13px; font-weight: 800; margin: 16px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; color: #0f172a;">3. Diagnostik Fisik Tanah</h3>
+                <div style="margin-bottom: 15px; font-size: 12px; line-height: 1.65; color: #1e293b; background: #fff; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    ${cleanFormulaMathForDisplay(history.evalResult.diag)}
+                </div>
+
+                <h3 style="font-size: 13px; font-weight: 800; margin: 16px 0 8px 0; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; color: #0f172a;">4. Rekomendasi Solusi Geoteknik & Sipil Struktur</h3>
+                <div style="margin-bottom: 15px; font-size: 12px; line-height: 1.65; color: #1e293b; background: #fff; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    ${cleanFormulaMathForDisplay(history.evalResult.sol)}
+                </div>
+
+                <div style="margin-top: 40px; border-top: 2px solid #0f172a; padding-top: 14px; display: flex; justify-content: space-between; align-items: flex-end;">
+                    <div style="font-size: 11px; color: #475569; max-width: 480px;">
+                        <div><strong>Standar Acuan Utama:</strong> ${history.evalResult.standard || 'SNI 8460:2017 & ASTM'}</div>
+                        <div style="margin-top: 4px; font-size: 10px; color: #94a3b8; line-height: 1.4;">Lembar verifikasi komputasi resmi ini digenerasi secara otomatis oleh sistem analisis GeoStruct Pro Master Edition V5.5 berdasarkan parameter uji geoteknik laboratorium dan lapangan.</div>
+                    </div>
+                    <div style="text-align: center; font-size: 11px; min-width: 220px;">
+                        <span>Diverifikasi & Disahkan Oleh:</span><br><br><br>
+                        <strong style="font-size: 13px; text-decoration: underline; color: #0f172a;">Ir. Mohamad Hartadi (Adi)</strong><br>
+                        <span style="color: #475569; font-size: 10px; font-family: monospace;">Ahli Rekayasa Geoteknik & Struktur Sipil</span>
                     </div>
                 </div>
             `;
 
-            window.print();
+            reportContainer.classList.remove('hidden');
+
+            const triggerPrint = () => {
+                window.print();
+                reportContainer.classList.add('hidden');
+            };
+
+            // Jika formula matematika belum berupa SVG, typeset terlebih dahulu dengan MathJax
+            const formulaBox = document.getElementById('printFormulaContainer');
+            if (window.MathJax && window.MathJax.typesetPromise && (!renderedMath || !renderedMath.querySelector('svg'))) {
+                window.MathJax.typesetPromise([formulaBox]).then(() => {
+                    setTimeout(triggerPrint, 200);
+                }).catch(() => {
+                    if (formulaBox && formulaBox.innerText.includes('$')) {
+                        formulaBox.innerHTML = cleanFormulaMathForDisplay(item.expression);
+                    }
+                    setTimeout(triggerPrint, 200);
+                });
+            } else {
+                setTimeout(triggerPrint, 150);
+            }
         }
 
                 // DRAGGABLE PROGRAMMER MODAL (SMOOTH HARDWARE-ACCELERATED TRANSLATE, PREVENTS JUMPING)
