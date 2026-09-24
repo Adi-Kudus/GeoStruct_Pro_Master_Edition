@@ -2815,31 +2815,98 @@
             appendUserMessage(query);
             const lower = query.toLowerCase().trim();
 
-            // 1. My Aplikasi Shortcut
-            if (lower === "my aplikasi" || lower.includes("aplikasi") && lower.includes("hartadi")) {
-                let listHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2.5 max-h-56 overflow-y-auto custom-scroll pr-1">`;
-                myAppsDirectory.forEach(app => {
-                    listHtml += `
-                        <a href="${app.u}" target="_blank" rel="noopener noreferrer" class="p-2 bg-slate-50 dark:bg-slate-950 hover:border-amber-500 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center gap-2 group transition text-decoration-none">
-                            <div class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0 text-xs group-hover:scale-110 transition-transform">
-                                <i class="fa-solid ${app.i}"></i>
-                            </div>
-                            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-amber-500 truncate">${app.n}</span>
-                        </a>
-                    `;
-                });
-                listHtml += `</div>`;
+            // DIREKTORI 50 APLIKASI PORTOFOLIO IR. MOHAMAD HARTADI
+        const myAppsDirectory = [
+            { u: "https://adikds.github.io/jarvis-ai/", i: "fa-robot", n: "JARVIS AI Assistant", cat: "AI & Automation" },
+            { u: "https://adikds.github.io/edu-market-pro/", i: "fa-graduation-cap", n: "EduMarket Pro", cat: "Education & Market" },
+            { u: "https://adikds.github.io/iptv-terminal/", i: "fa-tv", n: "IPTV Terminal", cat: "Media & Streaming" },
+            { u: "https://adikds.github.io/TV-streaming-live/", i: "fa-signal", n: "TV Streaming Live", cat: "Media & Streaming" },
+            { u: "https://adikds.github.io/Al-Quran-Karim/", i: "fa-book-quran", n: "Al-Quran Karim", cat: "Islamic & Quran" },
+            { u: "https://adikds.github.io/-MEGA-ATLAS-FKG/", i: "fa-tooth", n: "Mega Atlas FKG", cat: "Medical & Dentistry" },
+            { u: "https://adi-kudus.github.io/InaTEWS-Pro-v4.5-/", i: "fa-wave-square", n: "InaTEWS Tsunami Alert", cat: "Disaster & GIS" },
+            { u: "https://adikds.github.io/MONITORING-PREDIKSI-STATUS-EI-NI-O-LA-NI-A/", i: "fa-temperature-half", n: "El Nino & La Nina", cat: "Meteorology & Climate" },
+            { u: "https://adikds.github.io/MONITORING-PREDIKSI-ANGIN-MUSON-INDONESIA/", i: "fa-wind", n: "Angin Muson Indonesia", cat: "Meteorology & Climate" },
+            { u: "https://adikds.github.io/INTEGRATED-DAM-ANALYTICS-ASSESSMENT-SYSTEM/", i: "fa-water", n: "Dam Analytics System", cat: "Water Resources" },
+            { u: "https://adikds.github.io/WAY-APU-DAM/", i: "fa-building-shield", n: "Way Apu Dam Assessment", cat: "Water Resources" },
+            { u: "https://adikds.github.io/EVENT-DRIVEN-ARCHITECTURE-FOR-AI-AGENTS/", i: "fa-sitemap", n: "EDA AI Agents", cat: "AI & System Architecture" },
+            { u: "https://adikds.github.io/GeoStructPro-15-Essential-Geotechnical-Formulas/", i: "fa-mountain", n: "GeoStructPro 15 Formulas", cat: "Geotechnical & Civil" },
+            { u: "https://adikds.github.io/GEOSTRUCT-PRO-20-FORMULA-GEOTECHNICAL/", i: "fa-layer-group", n: "GeoStruct Pro 20", cat: "Geotechnical & Civil" },
+            { u: "https://adikds.github.io/UNIFIED-SOIL-CLASSIFICATION-SYSTEM/", i: "fa-cubes", n: "USCS Soil Classification", cat: "Geotechnical & Civil" },
+            { u: "https://adikds.github.io/AERORADAR-PRO/", i: "fa-plane", n: "AeroRadar Pro v3.4", cat: "Aviation & ADS-B" },
+            { u: "https://adikds.github.io/HYDRACANAL-PRO-GEOMETRIC-DESIGN/", i: "fa-water-ladder", n: "HydraCanal Pro Design", cat: "Water Resources" },
+            { u: "https://adikds.github.io/financial-planner/", i: "fa-chart-line", n: "Financial Planner Pro", cat: "Finance & Analytics" },
+            { u: "https://adikds.github.io/business-suite/", i: "fa-chart-bar", n: "Business Suite Pro", cat: "Finance & Analytics" },
+            { u: "https://adikds.github.io/stock-manager/", i: "fa-boxes-stacked", n: "Stock Manager Pro", cat: "Management & POS" },
+            { u: "https://adikds.github.io/Aplikasi_Point_of_Sale_-POS-_atau_sistem_kasir/", i: "fa-cash-register", n: "POS Terminal Kasir", cat: "Management & POS" },
+            { u: "https://adikds.github.io/KEUANGANKU/", i: "fa-wallet", n: "Keuanganku Personal", cat: "Finance & Analytics" },
+            { u: "https://adikds.github.io/DARUSSYIFA-MEDIKA/", i: "fa-hospital", n: "DARUSSYIFA Medika", cat: "Medical & Health AI" },
+            { u: "https://adikds.github.io/SKIN_SYIFA_AI/", i: "fa-magnifying-glass-chart", n: "SKIN SYIFA AI", cat: "Medical & Health AI" },
+            { u: "https://adikds.github.io/NEURO-PSYCH_AI/", i: "fa-brain", n: "NEURO-PSYCH AI", cat: "Medical & Health AI" },
+            { u: "https://adikds.github.io/SMILE-SYIFA-AI/", i: "fa-face-smile", n: "SMILE SYIFA AI", cat: "Medical & Health AI" },
+            { u: "https://adikds.github.io/DOKTER-AI/", i: "fa-user-doctor", n: "DOKTER AI Assistant", cat: "Medical & Health AI" },
+            { u: "https://www.f15library.com/", i: "fa-book-open-reader", n: "F15 Library Online", cat: "Education & Digital Lib" },
+            { u: "https://adikds.github.io/ATLAS-GEOTEKNIK/", i: "fa-earth-americas", n: "Atlas Geoteknik", cat: "Geotechnical & Civil" },
+            { u: "https://adikds.github.io/STATISTICS_for_ENGINEERS-/", i: "fa-chart-pie", n: "Statistics for Engineers", cat: "Engineering & Math" },
+            { u: "https://famelack.com/radio/id", i: "fa-radio", n: "Radio Online Famelack", cat: "Media & Streaming" },
+            { u: "https://famelack.com/tv/id", i: "fa-tv", n: "TV Famelack Live", cat: "Media & Streaming" },
+            { u: "https://adikds.github.io/Mega-Atlas-Kedokteran-Neurologi-Bedah-Syaraf/", i: "fa-brain", n: "Neurologi & Bedah Syaraf", cat: "Medical & Health AI" },
+            { u: "https://adikds.github.io/Adi_Newbie/", i: "fa-user-astronaut", n: "Adi Newbie Portal", cat: "Portfolio & Personal" },
+            { u: "https://adi-kudus.github.io/dss-sedimen-pro/", i: "fa-water", n: "DSS Sedimen Pesisir", cat: "Water Resources & Civil" },
+            { u: "https://adikds.github.io/ANALISIS-PONDASI-TELAPAK-/", i: "fa-cubes-stacked", n: "Analisis Pondasi Telapak", cat: "Geotechnical & Structural" },
+            { u: "https://adikds.github.io/ai-meeting-assistant/", i: "fa-microphone-lines", n: "Notulen AI Meeting Pro", cat: "AI & Productivity" },
+            { u: "https://adikds.github.io/gudang-bulog/", i: "fa-warehouse", n: "Struktur Gudang Bulog", cat: "Structural Engineering" },
+            { u: "https://adikds.github.io/-Doa-Digital-Pro/", i: "fa-hands-praying", n: "Kumpulan Doa Digital Pro", cat: "Islamic & Lifestyle" },
+            { u: "https://adikds.github.io/AASHTO-SOIL-CLASSIFIER/", i: "fa-road", n: "AASHTO Soil Classifier", cat: "Geotechnical Engineering" },
+            { u: "https://adikds.github.io/APEX-Foundations-v3.1-Geotechnical-AI-/", i: "fa-monument", n: "APN Foundations v3.1", cat: "Geotechnical & Civil" },
+            { u: "https://adikds.github.io/buildrab-ai-pro/", i: "fa-file-invoice-dollar", n: "BuildRAB AI Pro Edition", cat: "Cost Estimating & Civil" },
+            { u: "https://adi-kudus.github.io/STADION-PRO-v4.0-Sepakbola-Modern-/", i: "fa-shield-halved", n: "Stadiun Pro", cat: "Struktur Engineering" },
+            { u: "https://adi-kudus.github.io/GEO-CIVIL-3D-PRO/", i: "fa-border-all", n: "Retaining Wall & Sheet Pile", cat: "Geotechnical & Structural" },
+            { u: "https://adi-kudus.github.io/PORTAL-STRUKTUR-PRO/", i: "fa-hill-rockslide", n: "Portal Struktur", cat: "Struktur Analysis" },
+            { u: "https://adi-kudus.github.io/GEDUNGRC-PRO-v5.0-PRO/", i: "fa-faucet-drip", n: "Gedung Pro", cat: "Struktur Engineering" },
+            { u: "https://adikds.github.io/gudang-bulog/", i: "fa-arrow-down-up-across-line", n: "Gudang Bulog", cat: "Struktur Analisis" },
+            { u: "https://adi-kudus.github.io/BuildRAB-AI-Pro-Edition/", i: "fa-laptop-code", n: "BuildRAB AI Pro Edition", cat: "RAB, Schedule CPM, Kurva S & Cost Control" },
+            { u: "https://adi-kudus.github.io/Seismic-Site-Report-SNI-PuSGeN-2024/", i: "fa-house-crack", n: "Seismic Site Response Pro", cat: "Earthquake Engineering" },
+            { u: "https://adi-kudus.github.io/GeoStruct_Pro_Master_Edition/", i: "fa-mountain-city", n: "GeoStruct Pro Master Edition", cat: "Geotechnical Suite" }
+        ];
 
-                const resp = `
-                    <strong><i class="fa-solid fa-layer-group text-indigo-500 mr-1"></i> Direktori 34+ Aplikasi Ir. Mohamad Hartadi:</strong>
-                    <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Pilih salah satu aplikasi untuk membuka langsung di peramban Anda:</p>
-                    ${listHtml}
+        // 1. My Aplikasi Shortcut (DIREKTORI 50 APLIKASI MODEL INATEWS PRO V4.5)
+        if (lower === "my aplikasi" || lower.includes("my aplikasi") || lower.includes("portofolio") || lower.includes("direktori") || lower.includes("daftar aplikasi") || lower.includes("aplikasi apa saja") || lower.includes("semua aplikasi") || lower.includes("50 aplikasi") || (lower.includes("aplikasi") && (lower.includes("hartadi") || lower.includes("adi") || lower.includes("daftar") || lower.includes("list")))) {
+            let appsHtml = '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1 custom-scroll">';
+            myAppsDirectory.forEach((app, idx) => {
+                appsHtml += `
+                    <a href="${app.u}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2.5 p-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-indigo-500/30 hover:border-indigo-400 dark:border-indigo-500/40 rounded-xl transition-all shadow-sm group cursor-pointer text-decoration-none">
+                        <div class="w-7 h-7 flex items-center justify-center bg-indigo-100 dark:bg-indigo-950 rounded-lg shrink-0 text-indigo-600 dark:text-indigo-400 text-xs group-hover:scale-110 transition-transform">
+                            <i class="fa-solid ${app.i}"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <span class="text-[11px] font-bold text-slate-800 dark:text-slate-200 block truncate group-hover:text-amber-500 transition-colors">${idx + 1}. ${app.n}</span>
+                            <span class="text-[9px] text-slate-500 dark:text-slate-400 block truncate font-mono">${app.cat}</span>
+                        </div>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px] text-slate-400 group-hover:text-indigo-500 transition-colors"></i>
+                    </a>
                 `;
-                appendBotMessage(resp, "Menampilkan direktori aplikasi ekosistem terpadu Ir Mohamad Hartadi.");
-                return;
-            }
+            });
+            appsHtml += '</div>';
 
-            // 2. Programmer Shortcut
+            const resp = `
+            <div class="p-3.5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-indigo-500/40 dark:border-indigo-500/50 space-y-2.5 font-mono text-xs shadow-sm">
+                <div class="border-b border-indigo-500/30 dark:border-indigo-500/40 pb-2 flex justify-between items-center">
+                    <div>
+                        <span class="text-[9px] px-2 py-0.5 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-400 dark:border-indigo-500 rounded font-black uppercase tracking-wider">PORTFOLIO ECOSYSTEM</span>
+                        <h4 class="text-xs sm:text-sm font-black font-tech text-indigo-700 dark:text-indigo-300 tracking-wider mt-1 uppercase">DIREKTORI 50 APLIKASI IR. MOHAMAD HARTADI</h4>
+                    </div>
+                    <span class="text-[10px] font-mono font-black text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-950/80 px-2.5 py-1 rounded-full border border-indigo-400 dark:border-indigo-500/40">50 APPS</span>
+                </div>
+                <p class="text-[11px] text-slate-600 dark:text-slate-400 font-sans leading-snug">
+                    Pilih dan klik salah satu kartu aplikasi di bawah ini untuk membuka langsung di peramban baru:
+                </p>
+                ${appsHtml}
+            </div>`;
+            appendBotMessage(resp, "Menampilkan direktori lengkap lima puluh aplikasi portofolio milik Ir Mohamad Hartadi.");
+            return;
+        }
+
+        // 2. Programmer Shortcut
             if (lower === "programmer" || lower === "developer" || lower.includes("hartadi") || lower.includes("adi")) {
                 const devCard = `
                     <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-amber-500/50 space-y-2.5 mt-1">
